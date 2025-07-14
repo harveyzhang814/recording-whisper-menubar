@@ -155,6 +155,36 @@ WhisperElectron是一款基于React+Electron的跨平台桌面应用，提供高
 
 - **语音转录**: Whisper API (或者其他自定义API)
 
+### 3.2. 核心功能技术选型
+
+#### 3.2.1. 录音功能
+- **技术方案**: Web Audio API + MediaRecorder
+- **核心依赖**: 
+  - `fluent-ffmpeg`: 音频格式转换
+  - `ffmpeg-static`: FFmpeg静态库
+  - `node-audio-recorder`: 音频录制封装
+- **优势**: 跨平台兼容性好，实时处理能力强，开发效率高
+
+#### 3.2.2. 全局快捷键功能
+- **技术方案**: Electron globalShortcut API
+- **核心依赖**: 
+  - `electron`: 原生globalShortcut API
+- **优势**: 系统级监听，后台触发，跨平台兼容，性能优秀
+
+#### 3.2.3. 系统托盘功能
+- **技术方案**: Electron Tray API
+- **核心依赖**: 
+  - `electron`: 原生Tray API
+- **优势**: 原生支持，跨平台兼容，功能完整，性能优秀
+
+#### 3.2.4. 语音转录功能
+- **技术方案**: 抽象化API客户端
+- **核心依赖**: 
+  - `axios`: HTTP请求处理
+  - `axios-retry`: 重试机制
+  - `fluent-ffmpeg`: 音频预处理
+- **优势**: 高度兼容，支持Whisper API和自定义API，易于扩展
+
 
 
 ## 4. 界面设计
