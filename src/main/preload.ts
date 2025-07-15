@@ -26,12 +26,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // 任务管理
   tasks: {
-    create: (data: any) => ipcRenderer.invoke('tasks:create', data),
-    getAll: () => ipcRenderer.invoke('tasks:getAll'),
-    getById: (id: string) => ipcRenderer.invoke('tasks:getById', id),
-    update: (id: string, data: any) => ipcRenderer.invoke('tasks:update', id, data),
-    delete: (id: string) => ipcRenderer.invoke('tasks:delete', id),
-    search: (query: string) => ipcRenderer.invoke('tasks:search', query),
+    create: (audioSource: string, metadata?: any) => ipcRenderer.invoke('task:create', audioSource, metadata),
+    getAll: (filters?: any) => ipcRenderer.invoke('task:getAll', filters),
+    get: (taskId: string) => ipcRenderer.invoke('task:get', taskId),
+    update: (taskId: string, updates: any) => ipcRenderer.invoke('task:update', taskId, updates),
+    delete: (taskId: string) => ipcRenderer.invoke('task:delete', taskId),
+    updateState: (taskId: string, state: string) => ipcRenderer.invoke('task:updateState', taskId, state),
+    search: (query: string) => ipcRenderer.invoke('task:search', query),
   },
   
   // 转录相关
@@ -46,11 +47,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // 文件管理
   files: {
-    import: (filePaths: string[]) => ipcRenderer.invoke('files:import', filePaths),
-    validate: (filePath: string) => ipcRenderer.invoke('files:validate', filePath),
-    getInfo: (filePath: string) => ipcRenderer.invoke('files:getInfo', filePath),
-    delete: (filePath: string) => ipcRenderer.invoke('files:delete', filePath),
-    getStorageUsage: () => ipcRenderer.invoke('files:getStorageUsage'),
+    import: (filePaths: string[]) => ipcRenderer.invoke('file:import', filePaths),
+    validate: (filePath: string) => ipcRenderer.invoke('file:validate', filePath),
+    getInfo: (filePath: string) => ipcRenderer.invoke('file:getInfo', filePath),
+    copy: (sourcePath: string, taskId: string) => ipcRenderer.invoke('file:copy', sourcePath, taskId),
+    delete: (filePath: string) => ipcRenderer.invoke('file:delete', filePath),
+    getStorageUsage: () => ipcRenderer.invoke('file:getStorageUsage'),
+    cleanup: () => ipcRenderer.invoke('file:cleanup'),
   },
   
   // 配置管理
@@ -95,11 +98,12 @@ declare global {
         setDevice: (deviceId: string) => Promise<void>;
       };
       tasks: {
-        create: (data: any) => Promise<any>;
-        getAll: () => Promise<any[]>;
-        getById: (id: string) => Promise<any>;
-        update: (id: string, data: any) => Promise<void>;
-        delete: (id: string) => Promise<void>;
+        create: (audioSource: string, metadata?: any) => Promise<any>;
+        getAll: (filters?: any) => Promise<any[]>;
+        get: (taskId: string) => Promise<any>;
+        update: (taskId: string, updates: any) => Promise<void>;
+        delete: (taskId: string) => Promise<void>;
+        updateState: (taskId: string, state: string) => Promise<void>;
         search: (query: string) => Promise<any[]>;
       };
       transcription: {
@@ -114,8 +118,10 @@ declare global {
         import: (filePaths: string[]) => Promise<any[]>;
         validate: (filePath: string) => Promise<boolean>;
         getInfo: (filePath: string) => Promise<any>;
+        copy: (sourcePath: string, taskId: string) => Promise<string>;
         delete: (filePath: string) => Promise<void>;
         getStorageUsage: () => Promise<any>;
+        cleanup: () => Promise<void>;
       };
       config: {
         get: (category: string, key?: string) => Promise<any>;

@@ -130,9 +130,9 @@ logManager.log('debug', 'recording', '开始录音', {
   taskId: 'task456',
   duration: 5000,
   fileSize: 1024000,
-  retryCount: 3,
+    retryCount: 3,
   timestamp: '2024-01-15T10:30:45.123Z'
-}
+  }
 
 // 避免的元数据
 {
