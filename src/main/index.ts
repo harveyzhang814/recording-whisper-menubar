@@ -5,6 +5,8 @@ import { LogManager, LogCategory } from './services/LogManager';
 import { ConfigManagerImpl } from './services/ConfigManager';
 import { TaskManagerImpl } from './services/TaskManager';
 import { FileManagerImpl } from './services/FileManager';
+import { AudioRecorderImpl } from './services/AudioRecorder';
+import { TranscriptionManagerImpl } from './services/TranscriptionManager';
 
 class MainWindow {
   private mainWindow: BrowserWindow | null = null;
@@ -13,6 +15,8 @@ class MainWindow {
   private configManager: ConfigManagerImpl;
   private taskManager: TaskManagerImpl;
   private fileManager: FileManagerImpl;
+  private audioRecorder: AudioRecorderImpl;
+  private transcriptionManager: TranscriptionManagerImpl;
 
   constructor() {
     this.databaseManager = new DatabaseManager();
@@ -20,6 +24,8 @@ class MainWindow {
     this.configManager = new ConfigManagerImpl(this.databaseManager, this.logManager);
     this.taskManager = new TaskManagerImpl(this.databaseManager, this.logManager);
     this.fileManager = new FileManagerImpl(this.databaseManager, this.logManager);
+    this.audioRecorder = new AudioRecorderImpl(this.logManager, this.fileManager, this.taskManager, this.configManager);
+    this.transcriptionManager = new TranscriptionManagerImpl(this.configManager, this.taskManager, this.fileManager);
     this.initialize();
   }
 
@@ -42,6 +48,14 @@ class MainWindow {
       // 初始化文件管理器
       await this.fileManager.initialize();
       this.logManager.system('文件管理器初始化完成');
+      
+      // 初始化录音管理器
+      await this.audioRecorder.initialize();
+      this.logManager.system('录音管理器初始化完成');
+      
+      // 初始化转录管理器
+      await this.transcriptionManager.initialize();
+      this.logManager.system('转录管理器初始化完成');
       
       // 当所有窗口关闭时退出应用
       app.on('window-all-closed', () => {
@@ -206,10 +220,81 @@ class MainWindow {
     ipcMain.handle('file:cleanup', async () => {
       await this.fileManager.cleanupTempFiles();
     });
+
+    // 录音管理
+    ipcMain.handle('recording:startRecording', async (event, options?: any) => {
+      return await this.audioRecorder.startRecording(options);
+    });
+
+    ipcMain.handle('recording:stopRecording', async () => {
+      return await this.audioRecorder.stopRecording();
+    });
+
+    ipcMain.handle('recording:pauseRecording', async () => {
+      return await this.audioRecorder.pauseRecording();
+    });
+
+    ipcMain.handle('recording:resumeRecording', async () => {
+      return await this.audioRecorder.resumeRecording();
+    });
+
+    ipcMain.handle('recording:cancelRecording', async () => {
+      return await this.audioRecorder.cancelRecording();
+    });
+
+    ipcMain.handle('recording:getRecordingState', async () => {
+      return await this.audioRecorder.getRecordingState();
+    });
+
+    ipcMain.handle('recording:getVolumeLevel', async () => {
+      return await this.audioRecorder.getVolumeLevel();
+    });
+
+    ipcMain.handle('recording:getRecordingDuration', async () => {
+      return await this.audioRecorder.getRecordingDuration();
+    });
+
+    ipcMain.handle('recording:getAvailableDevices', async () => {
+      return await this.audioRecorder.getAvailableDevices();
+    });
+
+    ipcMain.handle('recording:setRecordingDevice', async (event, deviceId: string) => {
+      return await this.audioRecorder.setRecordingDevice(deviceId);
+    });
+
+    // 转录管理
+    ipcMain.handle('transcription:start', async (event, taskId: string, options?: any) => {
+      return await this.transcriptionManager.startTranscription(taskId, options);
+    });
+
+    ipcMain.handle('transcription:stop', async (event, taskId: string) => {
+      return await this.transcriptionManager.stopTranscription(taskId);
+    });
+
+    ipcMain.handle('transcription:getStatus', async (event, taskId: string) => {
+      return await this.transcriptionManager.getTranscriptionStatus(taskId);
+    });
+
+    ipcMain.handle('transcription:getProgress', async (event, taskId: string) => {
+      return await this.transcriptionManager.getTranscriptionProgress(taskId);
+    });
+
+    ipcMain.handle('transcription:getResult', async (event, taskId: string) => {
+      return await this.transcriptionManager.getTranscriptionResult(taskId);
+    });
+
+    ipcMain.handle('transcription:export', async (event, taskId: string, format: string) => {
+      return await this.transcriptionManager.exportTranscription(taskId, format as any);
+    });
+
+    ipcMain.handle('transcription:batch', async (event, taskIds: string[]) => {
+      return await this.transcriptionManager.batchTranscribe(taskIds);
+    });
   }
 
   private async cleanup(): Promise<void> {
     try {
+      this.audioRecorder.destroy();
       await this.configManager.cleanup();
       await this.taskManager.cleanup();
       await this.fileManager.cleanup();

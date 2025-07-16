@@ -12,16 +12,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // 录音相关
   recording: {
-    start: () => ipcRenderer.invoke('recording:start'),
-    stop: () => ipcRenderer.invoke('recording:stop'),
-    pause: () => ipcRenderer.invoke('recording:pause'),
-    resume: () => ipcRenderer.invoke('recording:resume'),
-    cancel: () => ipcRenderer.invoke('recording:cancel'),
-    getState: () => ipcRenderer.invoke('recording:getState'),
+    startRecording: (options?: any) => ipcRenderer.invoke('recording:startRecording', options),
+    stopRecording: () => ipcRenderer.invoke('recording:stopRecording'),
+    pauseRecording: () => ipcRenderer.invoke('recording:pauseRecording'),
+    resumeRecording: () => ipcRenderer.invoke('recording:resumeRecording'),
+    cancelRecording: () => ipcRenderer.invoke('recording:cancelRecording'),
+    getRecordingState: () => ipcRenderer.invoke('recording:getRecordingState'),
     getVolumeLevel: () => ipcRenderer.invoke('recording:getVolumeLevel'),
-    getDuration: () => ipcRenderer.invoke('recording:getDuration'),
-    getDevices: () => ipcRenderer.invoke('recording:getDevices'),
-    setDevice: (deviceId: string) => ipcRenderer.invoke('recording:setDevice', deviceId),
+    getRecordingDuration: () => ipcRenderer.invoke('recording:getRecordingDuration'),
+    getAvailableDevices: () => ipcRenderer.invoke('recording:getAvailableDevices'),
+    setRecordingDevice: (deviceId: string) => ipcRenderer.invoke('recording:setRecordingDevice', deviceId),
   },
   
   // 任务管理
@@ -43,6 +43,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getProgress: (taskId: string) => ipcRenderer.invoke('transcription:getProgress', taskId),
     getResult: (taskId: string) => ipcRenderer.invoke('transcription:getResult', taskId),
     export: (taskId: string, format: string) => ipcRenderer.invoke('transcription:export', taskId, format),
+    batch: (taskIds: string[]) => ipcRenderer.invoke('transcription:batch', taskIds),
   },
   
   // 文件管理
@@ -86,16 +87,16 @@ declare global {
         toggleMaximize: () => Promise<void>;
       };
       recording: {
-        start: () => Promise<void>;
-        stop: () => Promise<any>;
-        pause: () => Promise<void>;
-        resume: () => Promise<void>;
-        cancel: () => Promise<void>;
-        getState: () => Promise<any>;
+        startRecording: (options?: any) => Promise<void>;
+        stopRecording: () => Promise<any>;
+        pauseRecording: () => Promise<void>;
+        resumeRecording: () => Promise<void>;
+        cancelRecording: () => Promise<void>;
+        getRecordingState: () => Promise<any>;
         getVolumeLevel: () => Promise<number>;
-        getDuration: () => Promise<number>;
-        getDevices: () => Promise<any[]>;
-        setDevice: (deviceId: string) => Promise<void>;
+        getRecordingDuration: () => Promise<number>;
+        getAvailableDevices: () => Promise<any[]>;
+        setRecordingDevice: (deviceId: string) => Promise<void>;
       };
       tasks: {
         create: (audioSource: string, metadata?: any) => Promise<any>;
@@ -113,6 +114,7 @@ declare global {
         getProgress: (taskId: string) => Promise<number>;
         getResult: (taskId: string) => Promise<any>;
         export: (taskId: string, format: string) => Promise<string>;
+        batch: (taskIds: string[]) => Promise<any[]>;
       };
       files: {
         import: (filePaths: string[]) => Promise<any[]>;

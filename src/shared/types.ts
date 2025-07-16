@@ -143,6 +143,22 @@ export interface AppConfig {
 }
 
 // 录音相关类型
+export interface AudioRecorder {
+  startRecording(options?: RecordingOptions): Promise<void>;
+  stopRecording(): Promise<AudioFile>;
+  pauseRecording(): Promise<void>;
+  resumeRecording(): Promise<void>;
+  cancelRecording(): Promise<void>;
+  getRecordingState(): RecordingState;
+  getVolumeLevel(): number;
+  getRecordingDuration(): number;
+  setRecordingDevice(deviceId: string): Promise<void>;
+  getAvailableDevices(): Promise<AudioDevice[]>;
+  on(event: string, listener: (...args: any[]) => void): void;
+  off(event: string, listener: (...args: any[]) => void): void;
+  destroy(): void;
+}
+
 export interface RecordingOptions {
   deviceId?: string;
   format?: string;
@@ -191,7 +207,10 @@ export enum LogCategory {
   TRANSCRIPT = 'TRANSCRIPT',
   TASK = 'TASK',
   UI = 'UI',
-  API = 'API'
+  API = 'API',
+  CONFIG = 'CONFIG',
+  SHORTCUT = 'SHORTCUT',
+  TRAY = 'TRAY'
 }
 
 // 错误类型

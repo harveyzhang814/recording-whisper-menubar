@@ -499,6 +499,15 @@ interface FileManager {
   
   // 清理临时文件
   cleanupTempFiles(): Promise<void>;
+  
+  // 转换音频格式
+  convertAudioFormat(sourcePath: string, targetFormat: AudioFormat, options?: ConversionOptions): Promise<string>;
+  
+  // 批量转换音频文件
+  batchConvertAudio(files: ConversionTask[]): Promise<ConversionResult[]>;
+  
+  // 获取支持的音频格式
+  getSupportedAudioFormats(): AudioFormat[];
 }
 ```
 
@@ -560,12 +569,220 @@ class FileManagerImpl implements FileManager {
   // - 记录清理日志
   // - 返回清理统计信息
   
-  // 音频格式转换
-  // - 使用FFmpeg进行格式转换
-  // - 支持压缩和优化
-  // - 处理转换过程中的错误
+  // 转换音频格式的具体实现
+  // - 调用AudioConverter进行格式转换
+  // - 验证转换参数和源文件
+  // - 生成目标文件路径
+  // - 执行格式转换操作
+  // - 验证转换结果
   // - 返回转换后的文件路径
+  // - 记录转换日志
+  
+  // 批量转换音频文件的具体实现
+  // - 创建批量转换任务
+  // - 调用AudioConverter的批量转换功能
+  // - 监控转换进度
+  // - 处理转换错误和重试
+  // - 返回批量转换结果
+  // - 记录批量转换日志
+  
+  // 获取支持音频格式的具体实现
+  // - 调用AudioConverter获取支持格式
+  // - 返回格式列表和描述
+  // - 包含格式兼容性信息
 }
+```
+
+### 5.3 音频格式转换模块
+
+#### 5.3.1 音频转换器接口
+
+```typescript
+interface AudioConverter {
+  // 转换音频格式
+  convertFormat(sourcePath: string, targetFormat: AudioFormat, options?: ConversionOptions): Promise<string>;
+  
+  // 转换为Whisper优化格式
+  convertToWhisperFormat(sourcePath: string): Promise<string>;
+  
+  // 批量转换音频文件
+  batchConvert(files: ConversionTask[]): Promise<ConversionResult[]>;
+  
+  // 获取支持的格式列表
+  getSupportedFormats(): AudioFormat[];
+  
+  // 获取音频文件信息
+  getAudioInfo(filePath: string): Promise<AudioInfo>;
+  
+  // 验证转换参数
+  validateConversionOptions(options: ConversionOptions): boolean;
+}
+```
+
+#### 5.3.2 音频转换器实现
+
+```typescript
+class AudioConverterImpl implements AudioConverter {
+  // 初始化音频转换器
+  // - 初始化FFmpeg实例
+  // - 配置转换参数
+  // - 设置临时目录
+  // - 初始化进度回调
+  
+  // 转换音频格式的具体实现
+  // - 验证源文件存在性和格式
+  // - 构建FFmpeg转换命令
+  // - 执行格式转换操作
+  // - 监控转换进度
+  // - 处理转换错误
+  // - 验证输出文件完整性
+  // - 返回转换后的文件路径
+  
+  // 转换为Whisper优化格式的具体实现
+  // - 转换为16kHz WAV格式
+  // - 设置单声道输出
+  // - 优化音频质量参数
+  // - 确保Whisper API兼容性
+  // - 返回优化后的文件路径
+  
+  // 批量转换的具体实现
+  // - 创建转换任务队列
+  // - 并发控制（最多2个并发）
+  // - 进度跟踪和状态更新
+  // - 错误处理和重试机制
+  // - 返回批量转换结果
+  
+  // 获取支持格式的具体实现
+  // - 返回支持的输入格式列表
+  // - 返回支持的输出格式列表
+  // - 包含格式描述和限制
+  
+  // 获取音频信息的具体实现
+  // - 使用FFmpeg获取音频元数据
+  // - 解析音频时长、采样率、声道数
+  // - 获取音频编码信息
+  // - 返回完整的音频信息对象
+  
+  // 验证转换参数的具体实现
+  // - 检查格式兼容性
+  // - 验证质量参数范围
+  // - 检查文件大小限制
+  // - 返回验证结果和错误信息
+}
+```
+
+#### 5.3.3 转换配置和参数
+
+```typescript
+// 音频格式枚举
+enum AudioFormat {
+  WAV = 'wav',
+  MP3 = 'mp3',
+  M4A = 'm4a',
+  FLAC = 'flac',
+  AAC = 'aac',
+  OGG = 'ogg'
+}
+
+// 转换选项接口
+interface ConversionOptions {
+  // 输出格式
+  format: AudioFormat;
+  // 采样率（Hz）
+  sampleRate?: number;
+  // 声道数
+  channels?: number;
+  // 比特率（kbps）
+  bitrate?: number;
+  // 音频质量（0-10）
+  quality?: number;
+  // 是否保持原始时长
+  preserveDuration?: boolean;
+  // 输出文件路径
+  outputPath?: string;
+}
+
+// 转换任务接口
+interface ConversionTask {
+  // 源文件路径
+  sourcePath: string;
+  // 目标格式
+  targetFormat: AudioFormat;
+  // 转换选项
+  options?: ConversionOptions;
+  // 任务优先级
+  priority?: number;
+}
+
+// 转换结果接口
+interface ConversionResult {
+  // 任务ID
+  taskId: string;
+  // 源文件路径
+  sourcePath: string;
+  // 输出文件路径
+  outputPath: string;
+  // 转换状态
+  status: 'success' | 'failed' | 'cancelled';
+  // 错误信息
+  error?: string;
+  // 转换耗时（毫秒）
+  duration: number;
+  // 文件大小变化
+  sizeChange: {
+    original: number;
+    converted: number;
+    compressionRatio: number;
+  };
+}
+
+// 音频信息接口
+interface AudioInfo {
+  // 文件路径
+  filePath: string;
+  // 格式
+  format: AudioFormat;
+  // 时长（秒）
+  duration: number;
+  // 采样率（Hz）
+  sampleRate: number;
+  // 声道数
+  channels: number;
+  // 比特率（kbps）
+  bitrate: number;
+  // 文件大小（字节）
+  fileSize: number;
+  // 编码信息
+  codec: string;
+}
+```
+
+#### 5.3.4 转换进度管理
+
+```typescript
+// 转换进度接口
+interface ConversionProgress {
+  // 任务ID
+  taskId: string;
+  // 当前进度（0-100）
+  progress: number;
+  // 当前状态
+  status: 'pending' | 'converting' | 'completed' | 'failed' | 'cancelled';
+  // 当前处理的文件
+  currentFile: string;
+  // 已完成的文件数
+  completedFiles: number;
+  // 总文件数
+  totalFiles: number;
+  // 预计剩余时间（秒）
+  estimatedTimeRemaining: number;
+  // 错误信息
+  error?: string;
+}
+
+// 进度回调类型
+type ProgressCallback = (progress: ConversionProgress) => void;
+```
 ```
 
 ### 6. 系统集成模块
@@ -1255,12 +1472,16 @@ classDiagram
         +deleteAudioFile(filePath) Promise~void~
         +getStorageUsage() Promise~StorageUsage~
         +cleanupTempFiles() Promise~void~
+        +convertAudioFormat(sourcePath, targetFormat, options?) Promise~string~
+        +batchConvertAudio(files) Promise~ConversionResult[]~
+        +getSupportedAudioFormats() AudioFormat[]
     }
     
     class FileManagerImpl {
         -appDir: string
         -tempDir: string
         -audioDir: string
+        -audioConverter: AudioConverter
         +initialize() Promise~void~
         +importAudioFiles(filePaths) Promise~AudioFile[]~
         +validateAudioFile(filePath) Promise~boolean~
@@ -1269,7 +1490,33 @@ classDiagram
         +deleteAudioFile(filePath) Promise~void~
         +getStorageUsage() Promise~StorageUsage~
         +cleanupTempFiles() Promise~void~
-        +convertAudioFormat(sourcePath, targetFormat) Promise~string~
+        +convertAudioFormat(sourcePath, targetFormat, options?) Promise~string~
+        +batchConvertAudio(files) Promise~ConversionResult[]~
+        +getSupportedAudioFormats() AudioFormat[]
+    }
+    
+    %% 音频格式转换模块
+    class AudioConverter {
+        <<interface>>
+        +convertFormat(sourcePath, targetFormat, options?) Promise~string~
+        +convertToWhisperFormat(sourcePath) Promise~string~
+        +batchConvert(files) Promise~ConversionResult[]~
+        +getSupportedFormats() AudioFormat[]
+        +getAudioInfo(filePath) Promise~AudioInfo~
+        +validateConversionOptions(options) boolean
+    }
+    
+    class AudioConverterImpl {
+        -ffmpeg: Ffmpeg
+        -tempDir: string
+        -progressCallback: ProgressCallback
+        +initialize() Promise~void~
+        +convertFormat(sourcePath, targetFormat, options?) Promise~string~
+        +convertToWhisperFormat(sourcePath) Promise~string~
+        +batchConvert(files) Promise~ConversionResult[]~
+        +getSupportedFormats() AudioFormat[]
+        +getAudioInfo(filePath) Promise~AudioInfo~
+        +validateConversionOptions(options) boolean
     }
     
     %% 系统集成模块
@@ -1328,6 +1575,7 @@ classDiagram
     CustomWhisperAPI ..|> TranscriptionAPI
     TranscriptionManagerImpl ..|> TranscriptionManager
     FileManagerImpl ..|> FileManager
+    AudioConverterImpl ..|> AudioConverter
     ShortcutManagerImpl ..|> ShortcutManager
     TrayManagerImpl ..|> TrayManager
     
@@ -1337,6 +1585,7 @@ classDiagram
     TranscriptionManagerImpl --> CustomWhisperAPI : creates
     TaskManagerImpl --> ConfigManager : uses
     AudioRecorderImpl --> FileManager : uses
+    FileManagerImpl --> AudioConverter : uses
     ShortcutManagerImpl --> ConfigManager : uses
     TrayManagerImpl --> TaskManager : uses
 ```
@@ -1447,6 +1696,50 @@ classDiagram
         +availableSpace: number
     }
 
+    %% 音频格式转换数据模型
+    class ConversionTask {
+        +taskId: string
+        +sourcePath: string
+        +targetFormat: AudioFormat
+        +options: ConversionOptions
+        +priority: number
+        +status: ConversionStatus
+        +createdAt: Date
+    }
+
+    class ConversionResult {
+        +taskId: string
+        +sourcePath: string
+        +outputPath: string
+        +status: 'success' | 'failed' | 'cancelled'
+        +error: string
+        +duration: number
+        +sizeChange: SizeChange
+        +completedAt: Date
+    }
+
+    class ConversionProgress {
+        +taskId: string
+        +progress: number
+        +status: ConversionStatus
+        +currentFile: string
+        +completedFiles: number
+        +totalFiles: number
+        +estimatedTimeRemaining: number
+        +error: string
+    }
+
+    class AudioInfo {
+        +filePath: string
+        +format: AudioFormat
+        +duration: number
+        +sampleRate: number
+        +channels: number
+        +bitrate: number
+        +fileSize: number
+        +codec: string
+    }
+
     %% 关系定义
     Task --> "0..*" AudioFile : has
     Task --> "0..*" TranscriptionResult : has
@@ -1454,6 +1747,8 @@ classDiagram
     AudioFile --> Task : belongs to
     TranscriptionResult --> Task : belongs to
     TranscriptionSegment --> TranscriptionResult : belongs to
+    ConversionTask --> ConversionResult : produces
+    ConversionTask --> ConversionProgress : tracks
 ```
 
 ### 枚举类型定义
@@ -1501,6 +1796,25 @@ classDiagram
         SHORTCUT
         TRAY
     }
+    
+    class AudioFormat {
+        <<enumeration>>
+        WAV
+        MP3
+        M4A
+        FLAC
+        AAC
+        OGG
+    }
+    
+    class ConversionStatus {
+        <<enumeration>>
+        PENDING
+        CONVERTING
+        COMPLETED
+        FAILED
+        CANCELLED
+    }
 ```
 
 ## 总结
@@ -1533,5 +1847,6 @@ classDiagram
 - 🔄 音频文件管理模块：FileManager 接口和实现
 - 🔄 录音功能模块：AudioRecorder 接口和实现
 - 🔄 转录功能模块：TranscriptionManager 接口和实现
+- 🔄 音频格式转换模块：AudioConverter 接口和实现（第八阶段）
 
 通过这种设计，可以确保项目的稳定性、可维护性和可扩展性。第一阶段的基础架构已经完成并通过测试，为后续功能开发奠定了坚实的基础。

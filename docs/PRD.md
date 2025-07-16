@@ -67,6 +67,14 @@ WhisperElectron是一款基于React+Electron的跨平台桌面应用，提供高
 - **重命名**: 支持文件和任务的重命名
 - **删除管理**: 支持删除不需要的文件和任务
 
+#### 2.2.3. 音频格式转换
+
+- **格式转换**: 支持音频文件格式转换（WAV、MP3、M4A、FLAC、AAC、OGG）
+- **Whisper优化**: 自动转换为Whisper API最优格式（16kHz WAV）
+- **批量转换**: 支持批量音频文件格式转换
+- **质量保持**: 转换过程中保持音频质量，支持自定义参数
+- **转换进度**: 显示格式转换进度和状态
+
 ### 2.3. 语音转录功能
 
 #### 2.3.1. 转录处理
@@ -184,6 +192,14 @@ WhisperElectron是一款基于React+Electron的跨平台桌面应用，提供高
   - `axios-retry`: 重试机制
   - `fluent-ffmpeg`: 音频预处理
 - **优势**: 高度兼容，支持Whisper API和自定义API，易于扩展
+
+#### 3.2.5. 音频格式转换功能
+- **技术方案**: FFmpeg + fluent-ffmpeg封装
+- **核心依赖**: 
+  - `fluent-ffmpeg`: FFmpeg Node.js封装
+  - `ffmpeg-static`: FFmpeg静态库
+  - `@ffmpeg-installer/ffmpeg`: FFmpeg安装器
+- **优势**: 支持所有主流音频格式，转换质量高，性能优秀，跨平台兼容
 
 
 

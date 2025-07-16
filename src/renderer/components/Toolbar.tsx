@@ -1,8 +1,13 @@
 import React from 'react';
 import { Button } from './Button';
-import { Mic, Settings, X, Minimize2 } from 'lucide-react';
+import { Mic, Settings, X, Minimize2, List, MicOff } from 'lucide-react';
 
-export const Toolbar: React.FC = () => {
+interface ToolbarProps {
+  currentPage: 'tasks' | 'recording';
+  onPageChange: (page: 'tasks' | 'recording') => void;
+}
+
+export const Toolbar: React.FC<ToolbarProps> = ({ currentPage, onPageChange }) => {
   const handleMinimize = () => {
     // TODO: 实现最小化功能
     console.log('Minimize window');
@@ -26,14 +31,21 @@ export const Toolbar: React.FC = () => {
   return (
     <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
       <div className="flex items-center justify-between">
-        {/* 左侧：录音控制 */}
+        {/* 左侧：页面切换 */}
         <div className="flex items-center space-x-3">
           <Button
-            onClick={handleStartRecording}
-            className="btn-primary"
+            onClick={() => onPageChange('recording')}
+            className={`${currentPage === 'recording' ? 'btn-primary' : 'btn-secondary'}`}
             icon={<Mic className="w-4 h-4" />}
           >
-            开始录音
+            录音
+          </Button>
+          <Button
+            onClick={() => onPageChange('tasks')}
+            className={`${currentPage === 'tasks' ? 'btn-primary' : 'btn-secondary'}`}
+            icon={<List className="w-4 h-4" />}
+          >
+            任务列表
           </Button>
         </div>
 
